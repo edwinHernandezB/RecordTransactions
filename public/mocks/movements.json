@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "nombre": "Starbucks",
+    "categoria": "Café",
+    "fecha": "2024-05-25T10:15:00",
+    "importe": -5.75,
+    "icono": "☕"
+  },
+  {
+    "id": 2,
+    "nombre": "Mercadona",
+    "categoria": "Supermercado",
+    "fecha": "2024-05-25T09:40:00",
+    "importe": -42.10,
+    "icono": "🛒"
+  },
+  {
+    "id": 3,
+    "nombre": "Amazon",
+    "categoria": "Online",
+    "fecha": "2024-05-25T10:15:00",
+    "importe": -78.20,
+    "icono": "📦"
+  }
+]
