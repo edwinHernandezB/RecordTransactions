@@ -1,30 +1,55 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CATEGORY_ASSETS } from "../utils/constants";
 import TopBar from "../components/Topbar";
 import EmptyState from "./EmptyState";
 import { useMovements } from "../context/MovementsContext";
 import FloatingButton from "../components/FloatingButton";
+import { Spacer } from "../components/Spacer";
+import { useCategories } from "../context/CategoriesContext";
+import { useDateInterval } from "../context/DateIntervalContext";
 
 export default function Home() {
   const navigate = useNavigate();
   const { movements, setMovements } = useMovements();
+  const { categoriesList, setCategoriesList} = useCategories();
+  const { startDate, endDate, setDateInterval } = useDateInterval();
+  const [pendingInterval, setPendingInterval] = useState({
+    startDate,
+    endDate,
+  });
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+  const filteredMovements = useMemo(() => {
+    if (!startDate || !endDate) return movements;
+
+    return movements.filter((movement) => {
+      const movementDate = new Date(movement.fecha);
+      const year = movementDate.getFullYear();
+      const month = String(movementDate.getMonth() + 1).padStart(2, "0");
+      const day = String(movementDate.getDate()).padStart(2, "0");
+      const movementDateKey = `${year}-${month}-${day}`;
+
+      return movementDateKey >= startDate && movementDateKey <= endDate;
+    });
+  }, [movements, startDate, endDate]);
 
   const { monthSpent, monthAvailable, categories } = useMemo(() => {
-    const ahora = new Date();
+    const ahora = endDate ? new Date(`${endDate}T12:00:00`) : new Date();
     const currentMonth = ahora.getMonth();
     const currentYear = ahora.getFullYear();
+    const hasDateInterval = Boolean(startDate && endDate);
 
     let spent = 0;
     let available = 0;
     const categorySummary = {};
 
-    movements.forEach((mov) => {
+    filteredMovements.forEach((mov) => {
       const date = new Date(mov.fecha);
       const isCurrentMonth =
         date.getMonth() === currentMonth && date.getFullYear() === currentYear;
 
-      if (!isCurrentMonth) return;
+      if (!hasDateInterval && !isCurrentMonth) return;
 
       const movImport = mov.importe;
 
@@ -45,12 +70,94 @@ export default function Home() {
       monthAvailable: available,
       categories: categorySummary,
     };
-  }, [movements]);
+  }, [filteredMovements, startDate, endDate]);
+
+  const handleIntervalSubmit = (event) => {
+    event.preventDefault();
+    if (
+      pendingInterval.startDate &&
+      pendingInterval.endDate &&
+      pendingInterval.startDate > pendingInterval.endDate
+    ) {
+      return;
+    }
+
+    setDateInterval(pendingInterval);
+    setIsDateModalOpen(false);
+  };
+
+  const openDateModal = () => {
+    setPendingInterval({ startDate, endDate });
+    setIsDateModalOpen(true);
+  };
 
   return (
     <>
-      <TopBar title="Balance mensual" showBackButton={false} />
+      <TopBar title="Mis finanzas" showBackButton={false} />
       <div className="home-container">
+        <button
+          type="button"
+          className="date-interval-button"
+          onClick={openDateModal}
+        >
+          {startDate && endDate
+            ? `${startDate} - ${endDate}`
+            : "Seleccionar fechas"}
+        </button>
+
+        {isDateModalOpen && (
+          <div className="modal" role="dialog" aria-modal="true">
+            <form className="modal-container date-interval" onSubmit={handleIntervalSubmit}>
+              <h2>Consultar movimientos</h2>
+              <label>
+                Fecha inicio
+                <input
+                  type="date"
+                  value={pendingInterval.startDate}
+                  onChange={(event) =>
+                    setPendingInterval({
+                      ...pendingInterval,
+                      startDate: event.target.value,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Fecha final
+                <input
+                  type="date"
+                  value={pendingInterval.endDate}
+                  onChange={(event) =>
+                    setPendingInterval({
+                      ...pendingInterval,
+                      endDate: event.target.value,
+                    })
+                  }
+                />
+              </label>
+              {pendingInterval.startDate &&
+                pendingInterval.endDate &&
+                pendingInterval.startDate > pendingInterval.endDate && (
+                  <span className="date-interval-error">
+                    La fecha inicio debe ser anterior a la fecha final.
+                  </span>
+                )}
+              <div className="date-interval-actions">
+                <button
+                  type="button"
+                  className="date-interval-cancel"
+                  onClick={() => setIsDateModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="date-interval-submit">
+                  Consultar
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         <MonthlySummary
           monthSpent={monthSpent}
           monthAvailable={monthAvailable}
@@ -58,12 +165,15 @@ export default function Home() {
 
         <Categories categories={categories} navigate={navigate} />
 
-        <Movements movements={movements} navigate={navigate} />
-        
-        <div className="data-saved">
-        <ButtonExportData movements={movements} categories={categories} />
-        <ButtonImportData setMovements={setMovements} />
-</div>
+        <Movements movements={filteredMovements} navigate={navigate} />
+
+        <DataRecovery
+          movements={movements}
+          setMovements={setMovements}
+          categoriesList={categoriesList}
+          setCategoriesList={setCategoriesList}
+        />
+
         <FloatingButton onClick={() => navigate("/movements/create")} />
       </div>
     </>
@@ -97,7 +207,7 @@ function Categories({ categories, navigate }) {
     <>
       <div className="movements-header">
         <h3>Categorías</h3>
-        <button className="btn-showAll" onClick={() => navigate("/movements")}>
+        <button className="btn-showAll" onClick={() => navigate("/Categories")}>
           <h3>Ver todos</h3>
         </button>
       </div>
@@ -120,6 +230,7 @@ function CategoriesList({ categories }) {
   return (
     <div>
       {Object.entries(categories)
+      .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(([cat, total]) => (
           <div key={cat} className="category-summary">
@@ -147,6 +258,7 @@ function Movements({ movements, navigate }) {
   );
 }
 
+// Lista de movimientos
 function MovementList({ movements }) {
   if (!movements || movements.length === 0) {
     return (
@@ -184,47 +296,63 @@ function MovementList({ movements }) {
   ));
 }
 
-function ButtonExportData({
+// Importar datos
+function DataRecovery({
   movements,
-  incomeCategories,
-  spentCategories,
-  categories,
+  setMovements,
+  categoriesList,
+  setCategoriesList,
 }) {
   return (
+    <>
+    <div className="export-title">
+      <span >Puedes guardar o importar datos</span>
+      </div>
+      <div className="data-saved-block">
+        <ButtonExportData movements={movements} categoriesList={categoriesList} />
+        <Spacer size={10} horizontal />
+        <ButtonImportData setMovements={setMovements} setCategoriesList={setCategoriesList} />
+      </div>
+    </>
+  );
+}
+
+// Exportar datos
+function ButtonExportData({ movements, categoriesList }) {
+  const navigate = useNavigate();
+
+  return (
     <button
-      className="btn-export"
+      className="btn-export-import"
       onClick={() => {
-        const exportData = movements.map((m) => ({
-          id: m.id,
-          nombre: m.nombre,
-          categoria: m.categoria,
-          fecha: m.fecha,
-          importe: m.importe,
-          tipo: m.importe < 0 ? "Gasto" : "Ingreso",
-        }));
+        try {
+          const exportData = (Array.isArray(movements) ? movements : []).map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+            categoria: m.categoria,
+            fecha: m.fecha,
+            importe: m.importe,
+            tipo: m.importe < 0 ? "Gasto" : "Ingreso",
+          }));
 
-        // const spentCategoriesList =  Object.keys(spentCategories);
-        //const incomeCategoriesList = Object.keys(incomeCategories);
-        const spentCategoriesList = Object.keys(categories);
-        const incomeCategoriesList = Object.keys(categories);
+          const exportCategories = Array.isArray(categoriesList)
+            ? categoriesList.map((m) => ({
+                categoria: m.category ?? m.categoria,
+                tipo: m.type ?? m.tipo,
+              }))
+            : [];
 
-        const jsonData = JSON.stringify(
-          {
+          const jsonData = {
             movimientos: exportData,
-            gastosCategorias: spentCategoriesList,
-            ingresosCategorias: incomeCategoriesList,
-          },
-          null,
-          2,
-        );
+            listaCategorias: exportCategories,
+          };
 
-        const blob = new Blob([jsonData], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "datos_movimientos.json";
-        link.click();
-        URL.revokeObjectURL(url);
+          const jsonText = JSON.stringify(jsonData, null, 2);
+          sessionStorage.setItem("jsonToView", jsonText);
+          navigate("/json-viewer");
+        } catch (error) {
+          alert("No se pudo preparar la exportación del JSON");
+        }
       }}
     >
       Exportar datos
@@ -232,21 +360,19 @@ function ButtonExportData({
   );
 }
 
-function ButtonImportData({ setMovements }) {
+// Importar datos
+function ButtonImportData({ setMovements, setCategoriesList }) {
   return (
     <>
-      <button
-        className="btn-import"
-        onClick={() => document.getElementById("import-json-input").click()}
-      >
+      <label htmlFor="import-json-input" className="btn-export-import">
         Importar datos
-      </button>
+      </label>
 
       <input
         id="import-json-input"
         type="file"
         accept="application/json"
-        style={{ display: "none" }}
+        className="btn-export-input"
         onChange={(e) => {
           const file = e.target.files[0];
           if (!file) return;
@@ -257,11 +383,28 @@ function ButtonImportData({ setMovements }) {
               const data = JSON.parse(event.target.result);
 
               if (data.movimientos && Array.isArray(data.movimientos)) {
-                // 🔥 Aquí es donde REALMENTE se guardan
-                setMovements(data.movimientos);
+                const importedCategories = Array.isArray(data.listaCategorias)
+                  ? data.listaCategorias
+                  : Array.isArray(data.categoria)
+                    ? data.categoria
+                    : [];
 
-                // Si quieres guardar categorías también:
-                // setCategories(data.categorias);
+                setMovements(data.movimientos);
+                setCategoriesList((prev) => {
+                  const current = Array.isArray(prev) ? prev : [];
+                  const merged = [...current, ...importedCategories];
+
+                  const uniqueCategories = merged.filter(
+                    (item, index, array) =>
+                      index ===
+                      array.findIndex(
+                        (candidate) =>
+                          JSON.stringify(candidate) === JSON.stringify(item)
+                      )
+                  );
+
+                  return uniqueCategories;
+                });
 
                 alert("Datos importados correctamente");
               } else {
