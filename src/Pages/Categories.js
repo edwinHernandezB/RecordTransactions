@@ -24,25 +24,25 @@ export default function Categories() {
 		const filteredMovements = movements.filter((movement) => {
 			if (!movement || !movement.fecha) return false;
 
-			const date = new Date(movement.fecha);
-			const dateKey = date.toISOString().split("T")[0];
-
 			if (startDate && endDate) {
+				const date = new Date(movement.fecha);
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, "0");
+				const day = String(date.getDate()).padStart(2, "0");
+				const dateKey = `${year}-${month}-${day}`;
+
 				return dateKey >= startDate && dateKey <= endDate;
 			}
 
-			const now = new Date();
-			return (
-				date.getMonth() === now.getMonth() &&
-				date.getFullYear() === now.getFullYear()
-			);
+			return true;
 		});
 
 		filteredMovements.forEach((movement) => {
-			if (movement.importe === 0 || movement.importe > 0) return;
+			const amount = Number(movement.importe);
+			if (!Number.isFinite(amount) || amount >= 0) return;
 
 			const category = movement.categoria || "Sin categoría";
-			totals[category] = (totals[category] || 0) + Math.abs(Number(movement.importe));
+			totals[category] = (totals[category] || 0) + Math.abs(amount);
 		});
 
 		return allCategories

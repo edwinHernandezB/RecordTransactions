@@ -14,9 +14,11 @@ export default function Movements() {
   const { startDate, endDate } = useDateInterval();
   const hasDateInterval = Boolean(startDate && endDate);
 
-  const filteredMovements = hasDateInterval
-    ? movements.filter((movement) => !category || movement.categoria === category)
-      .filter((movement) => {
+  const filteredMovements = movements
+    .filter((movement) => !category || movement.categoria === category)
+    .filter((movement) => {
+      if (!hasDateInterval) return true;
+
         const movementDate = new Date(movement.fecha);
         const year = movementDate.getFullYear();
         const month = String(movementDate.getMonth() + 1).padStart(2, "0");
@@ -24,24 +26,16 @@ export default function Movements() {
         const movementDateKey = `${year}-${month}-${day}`;
 
         return movementDateKey >= startDate && movementDateKey <= endDate;
-      })
-    : movements;
+    });
 
-  const ahora = new Date();
   let totalMonthSpent = 0.0;
   if (filteredMovements && filteredMovements.length > 0) {
     totalMonthSpent = filteredMovements
       .filter((movement) => {
-        const fecha = new Date(movement.fecha);
-        return (
-          movement.importe < 0 &&
-          (hasDateInterval ||
-            (fecha.getMonth() === ahora.getMonth() &&
-              fecha.getFullYear() === ahora.getFullYear()))
-        );
+        const amount = Number(movement.importe);
+        return Number.isFinite(amount) && amount < 0;
       })
-      .filter((movement) => !category || movement.categoria === category)
-      .reduce((total, movement) => total + Math.abs(movement.importe), 0);
+      .reduce((total, movement) => total + Math.abs(Number(movement.importe)), 0);
   }
 
   return (

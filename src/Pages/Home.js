@@ -35,23 +35,13 @@ export default function Home() {
   }, [movements, startDate, endDate]);
 
   const { monthSpent, monthAvailable, categories } = useMemo(() => {
-    const ahora = endDate ? new Date(`${endDate}T12:00:00`) : new Date();
-    const currentMonth = ahora.getMonth();
-    const currentYear = ahora.getFullYear();
-    const hasDateInterval = Boolean(startDate && endDate);
-
     let spent = 0;
     let available = 0;
     const categorySummary = {};
 
     filteredMovements.forEach((mov) => {
-      const date = new Date(mov.fecha);
-      const isCurrentMonth =
-        date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-
-      if (!hasDateInterval && !isCurrentMonth) return;
-
-      const movImport = mov.importe;
+      const movImport = Number(mov.importe);
+      if (!Number.isFinite(movImport)) return;
 
       if (movImport < 0) {
         const ammountSpent = Math.abs(movImport);
@@ -89,6 +79,12 @@ export default function Home() {
   const openDateModal = () => {
     setPendingInterval({ startDate, endDate });
     setIsDateModalOpen(true);
+  };
+
+  const handleIntervalReset = () => {
+    const emptyInterval = { startDate: "", endDate: "" };
+    setPendingInterval(emptyInterval);
+    setDateInterval(emptyInterval);
   };
 
   return (
@@ -149,6 +145,16 @@ export default function Home() {
                   onClick={() => setIsDateModalOpen(false)}
                 >
                   Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="date-interval-cancel"
+                  onClick={() => {
+                    setIsDateModalOpen(false);
+                    handleIntervalReset();
+                  }}
+                >
+                  Restablecer
                 </button>
                 <button type="submit" className="date-interval-submit">
                   Consultar
