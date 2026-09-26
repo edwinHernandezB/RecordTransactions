@@ -1,3 +1,22 @@
+import {
+  ForkKnife,
+  HouseLine,
+  AirplaneTilt,
+  User,
+  CreditCard,
+  GraduationCap,
+  Car,
+  Heart,
+  Wallet,
+  GameController,
+  Briefcase,
+  ShoppingCart,
+  Coins,
+  ShoppingBag,
+  ChartLineUp,
+  Bank,
+} from "phosphor-react";
+
 export const SPENT_CATEGORIES = [
   "Comida",
   "Hogar",
@@ -21,19 +40,23 @@ export const INCOME_CATEGORIES = [
   "Fondos",
 ];
 
-export const CATEGORY_ASSETS = {
-  Comida: "/assets/comida.png",
-  Hogar: "/assets/hogar.png",
-  Viajes: "/assets/avion.png",
-  "Gastos personales": "/assets/personales.png",
-  "Cuotas mensuales": "/assets/cuota.png",
-  Pagos: "/assets/pago.png",
-  Restaurante: "/assets/restaurante.png",
-  Transporte: "/assets/coche.png",
-  Ocio: "/assets/ocio.png",
-  Salud: "/assets/salud.png",
-  Educación: "/assets/educacion.png",
-  Nomina: "/assets/nomina.png",
-  Prestamo: "/assets/prestamo.png",
-  Devolución: "/assets/prestamo.png",
+export const CATEGORY_ICONS = {
+  Comida: ShoppingCart,
+  Hogar: HouseLine,
+  Viajes: AirplaneTilt,
+  "Gastos personales": User,
+  "Cuotas mensuales": CreditCard,
+  Pagos: Wallet,
+  Restaurante: ForkKnife,
+  Transporte: Car,
+  Ocio: GameController,
+  Salud: Heart,
+  Educación: GraduationCap,
+  Nomina: Briefcase,
+  Prestamo: Coins,
+  Devolución: CreditCard,
+  Ventas: ShoppingBag,
+  Acciones:ChartLineUp,
+  Fondos: Bank,
 };
+

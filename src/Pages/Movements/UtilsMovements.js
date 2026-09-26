@@ -1,4 +1,5 @@
-import { CATEGORY_ASSETS } from "../../utils/constants";
+import { CATEGORY_ICONS } from "../../utils/constants";
+import { ArrowsClockwise  } from "phosphor-react";
 
 export function calculateTotalMonthSpent(filteredMovements) {
   if (!filteredMovements || filteredMovements.length == 0) {
@@ -46,11 +47,7 @@ export function Title({ totalMonthSpent }) {
 export function MovementsList({ movements }) {
   return movements.map((m) => (
     <div key={m.id} className="movement-row">
-      <img
-        src={CATEGORY_ASSETS[m.categoria] || "/assets/transferir.png"}
-        alt={m.categoria}
-        className="movement-icon"
-      />
+      <CategoryIcon category={m.categoria} />
 
       <div className="movement-details">
         <strong className="movement-name">{m.nombre}</strong>
@@ -68,4 +65,13 @@ export function MovementsList({ movements }) {
       </div>
     </div>
   ));
+}
+
+export function CategoryIcon({ category }) {
+  const Icon = CATEGORY_ICONS[category] || ArrowsClockwise;
+  return (
+    <div className="movement-icon">
+      <Icon size={32} weight="regular" color="#333" />
+    </div>
+  );
 }

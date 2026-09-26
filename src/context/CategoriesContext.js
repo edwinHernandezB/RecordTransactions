@@ -17,7 +17,33 @@ export function CategoriesProvider({ children }) {
     localStorage.setItem("categories", JSON.stringify(categoriesList));
   }, [categoriesList]);
 
-  const value = { categoriesList, setCategoriesList };
+  const updateCategoryLimit = (categoryName, limit) => {
+    const numericLimit = Number(limit);
+    if (!Number.isFinite(numericLimit) || numericLimit < 0) return;
+
+    setCategoriesList((currentCategories) => {
+      const normalized = normalizeCategories(currentCategories);
+      const categoryExists = normalized.some(
+        (category) =>
+          category.category === categoryName && category.type === "spent",
+      );
+
+      if (!categoryExists) {
+        return [
+          ...normalized,
+          { category: categoryName, type: "spent", limit: numericLimit },
+        ];
+      }
+
+      return normalized.map((category) =>
+        category.category === categoryName && category.type === "spent"
+          ? { ...category, limit: numericLimit }
+          : category,
+      );
+    });
+  };
+
+  const value = { categoriesList, setCategoriesList, updateCategoryLimit };
 
   return (
     <CategoriesContext.Provider value={value}>

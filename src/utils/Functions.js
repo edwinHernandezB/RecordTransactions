@@ -15,6 +15,7 @@ export const normalizeCategories = (categories = []) => {
       return {
         category: String(category).trim(),
         type: type === "income" ? "income" : "spent",
+        limit: item?.limit ?? item?.presupuesto ?? 0,
       };
     })
     .filter((item) => item.category);

@@ -1,13 +1,18 @@
+import BudgetBar from "../../components/BudgetBar";
 import { SPENT_CATEGORIES } from "../../utils/constants";
 import { normalizeCategories } from "../../utils/Functions";
-import { FiChevronRight } from "react-icons/fi";
 
 export function getCategoriesSummary(movements, categoriesList, startDate, endDate) {
 	const totals = {};
 	const persistedCategories = normalizeCategories(categoriesList)
-		.filter((category) => category.type === "spent")
-		.map((category) => category.category);
-	const allCategories = [...new Set([...SPENT_CATEGORIES, ...persistedCategories])];
+		.filter((category) => category.type === "spent");
+	const categoryLimits = new Map(
+		persistedCategories.map(({ category, limit }) => [category, limit]),
+	);
+	const persistedCategoryNames = persistedCategories.map(
+		(category) => category.category,
+	);
+	const allCategories = [...new Set([...SPENT_CATEGORIES, ...persistedCategoryNames])];
 
 	const filteredMovements = movements.filter((movement) => {
 		if (!movement || !movement.fecha) return false;
@@ -34,14 +39,18 @@ export function getCategoriesSummary(movements, categoriesList, startDate, endDa
 	});
 
 	return allCategories
-		.map((category) => [category, Number(totals[category] || 0)])
+		.map((category) => [
+			category,
+			Number(totals[category] || 0),
+			categoryLimits.get(category),
+		])
 		.filter(([, total]) => total > 0)
 		.sort(([, totalA], [, totalB]) => totalB - totalA);
 }
 
 export function CategoryList({ categories, navigate }) {
   return (
-    <div className="home-container">
+    <div className="category-list-container">
       <Title />
       <CategoryItem categories={categories} navigate={navigate} />
     </div>
@@ -57,15 +66,12 @@ export function CategoryItem({ categories, navigate }) {
     );
   }
 
-  return categories.map(([category, total]) => (
+  return categories.map(([category, total, limit]) => (
     <div
       key={category}
-      className="category-summary-total"
       onClick={() => navigate(`/categories/${category}`)}
     >
-      <span>{category}</span>
-      <span className="category-total">-{total.toFixed(2)}€</span>
-      <FiChevronRight />
+    <BudgetBar limit={limit} spent={total} title={category} />
     </div>
   ));
 }

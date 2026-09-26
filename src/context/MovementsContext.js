@@ -21,7 +21,14 @@ export function MovementsProvider({ children }) {
     localStorage.setItem("movements", JSON.stringify(movements));
   }, [movements]);
 
-  const value = { movements, setMovements };
+  const totalSpent = movements.reduce((total, movement) => {
+    const amount = Number(movement.importe);
+    return Number.isFinite(amount) && amount < 0
+      ? total + Math.abs(amount)
+      : total;
+  }, 0);
+
+  const value = { movements, setMovements, totalSpent };
 
   return (
     <MovementsContext.Provider value={value}>

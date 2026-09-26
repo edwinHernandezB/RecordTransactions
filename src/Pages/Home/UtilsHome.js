@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { CATEGORY_ASSETS } from "../../utils/constants";
 import EmptyState from "../EmptyState";
 import { Spacer } from "../../components/Spacer";
+import { CategoryIcon } from "../Movements/UtilsMovements";
 
 export function calculateFilteredMovements(movements, startDate, endDate) {
   if (!startDate || !endDate) return movements;
@@ -179,11 +179,8 @@ function MovementList({ movements }) {
 
   return movements.slice(0, 3).map((movement) => (
     <div key={movement.id} className="movement-row">
-      <img
-        src={CATEGORY_ASSETS[movement.categoria] || "/assets/transferir.png"}
-        alt={movement.categoria}
-        className="movement-icon"
-      />
+      <CategoryIcon category={movement.categoria} />
+
       <div className="movement-details">
         <strong className="movement-name">{movement.nombre}</strong>
         <div className="movement-category">{movement.categoria}</div>
@@ -246,6 +243,7 @@ function ButtonExportData({ movements, categoriesList }) {
             ? categoriesList.map((category) => ({
                 categoria: category.category ?? category.categoria,
                 tipo: category.type ?? category.tipo,
+                limit: category.limit ?? category.presupuesto ?? 0,
               }))
             : [];
           sessionStorage.setItem(
