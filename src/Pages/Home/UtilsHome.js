@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import EmptyState from "../EmptyState";
 import { Spacer } from "../../components/Spacer";
 import { CategoryIcon } from "../Movements/UtilsMovements";
+import { getCurrentMonthInterval } from "../../context/DateIntervalContext";
 
 export function calculateFilteredMovements(movements, startDate, endDate) {
   if (!startDate || !endDate) return movements;
@@ -76,9 +77,9 @@ export function openDateModal(
 }
 
 export function handleIntervalReset(setPendingInterval, setDateInterval) {
-  const emptyInterval = { startDate: "", endDate: "" };
-  setPendingInterval(emptyInterval);
-  setDateInterval(emptyInterval);
+  const currentMonthInterval = getCurrentMonthInterval();
+  setPendingInterval(currentMonthInterval);
+  setDateInterval(currentMonthInterval);
 }
 
 export function DateIntervalButton({ startDate, endDate, openDateModal }) {
