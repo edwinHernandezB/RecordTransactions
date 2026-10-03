@@ -2,7 +2,13 @@ import { useState } from "react";
 import { FiChevronRight, FiEdit2 } from "react-icons/fi";
 import { useCategories } from "../context/CategoriesContext";
 
-export default function BudgetBar({ limit, spent, title }) {
+export default function BudgetBar({
+  limit,
+  spent,
+  title,
+  categoryType = "spent",
+  amountLabel = categoryType === "income" ? "Ingresado" : "Gastado",
+}) {
   const { updateCategoryLimit } = useCategories();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [pendingLimit, setPendingLimit] = useState(limit ? String(limit) : "");
@@ -15,6 +21,8 @@ export default function BudgetBar({ limit, spent, title }) {
         ? "budget-fill--warning"
         : "";
   const remaining = Math.max(Number(limit) - spent, 0);
+  const limitLabel = categoryType === "income" ? "Objetivo" : "Presupuesto";
+  const remainingLabel = categoryType === "income" ? "Pendiente" : "Restante";
 
   const openEditor = (event) => {
     event.stopPropagation();
@@ -27,7 +35,7 @@ export default function BudgetBar({ limit, spent, title }) {
     event.stopPropagation();
     if (pendingLimit === "" || !Number.isFinite(Number(pendingLimit))) return;
 
-    updateCategoryLimit(title, pendingLimit);
+    updateCategoryLimit(title, pendingLimit, categoryType);
     setIsEditorOpen(false);
   };
 
@@ -57,15 +65,15 @@ export default function BudgetBar({ limit, spent, title }) {
             <>
               <div className="budget-stats">
                 <div className="budget-stat">
-                  <span>Presupuesto</span>
+                  <span>{limitLabel}</span>
                   <strong>{Number(limit).toFixed(2)}€</strong>
                 </div>
                 <div className="budget-stat">
-                  <span>Gastado</span>
+                  <span>{amountLabel}</span>
                   <strong>{Number(spent).toFixed(2)}€</strong>
                 </div>
                 <div className="budget-stat">
-                  <span>Restante</span>
+                  <span>{remainingLabel}</span>
                   <strong>{Number(remaining).toFixed(2)}€</strong>
                 </div>
               </div>
@@ -78,7 +86,7 @@ export default function BudgetBar({ limit, spent, title }) {
             </>
           ) : (
             <div className="budget-unset">
-              <strong>Gastado: {Number(spent).toFixed(2)}€</strong>
+              <strong>{amountLabel}: {Number(spent).toFixed(2)}€</strong>
               <button
                 type="button"
                 className="budget-edit-button"
@@ -108,8 +116,12 @@ export default function BudgetBar({ limit, spent, title }) {
             onSubmit={saveLimit}
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 id="budget-modal-title">Presupuesto de {title}</h2>
-            <label htmlFor="category-budget-limit">Límite mensual (€)</label>
+            <h2 id="budget-modal-title">
+              {categoryType === "income" ? "Objetivo" : "Presupuesto"} de {title}
+            </h2>
+            <label htmlFor="category-budget-limit">
+              {categoryType === "income" ? "Objetivo mensual (€)" : "Límite mensual (€)"}
+            </label>
             <input
               id="category-budget-limit"
               type="number"
@@ -128,7 +140,7 @@ export default function BudgetBar({ limit, spent, title }) {
                   className="budget-remove-button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    updateCategoryLimit(title, 0);
+                    updateCategoryLimit(title, 0, categoryType);
                     setIsEditorOpen(false);
                   }}
                 >

@@ -17,7 +17,7 @@ export function CategoriesProvider({ children }) {
     localStorage.setItem("categories", JSON.stringify(categoriesList));
   }, [categoriesList]);
 
-  const updateCategoryLimit = (categoryName, limit) => {
+  const updateCategoryLimit = (categoryName, limit, categoryType = "spent") => {
     const numericLimit = Number(limit);
     if (!Number.isFinite(numericLimit) || numericLimit < 0) return;
 
@@ -25,18 +25,18 @@ export function CategoriesProvider({ children }) {
       const normalized = normalizeCategories(currentCategories);
       const categoryExists = normalized.some(
         (category) =>
-          category.category === categoryName && category.type === "spent",
+          category.category === categoryName && category.type === categoryType,
       );
 
       if (!categoryExists) {
         return [
           ...normalized,
-          { category: categoryName, type: "spent", limit: numericLimit },
+          { category: categoryName, type: categoryType, limit: numericLimit },
         ];
       }
 
       return normalized.map((category) =>
-        category.category === categoryName && category.type === "spent"
+        category.category === categoryName && category.type === categoryType
           ? { ...category, limit: numericLimit }
           : category,
       );

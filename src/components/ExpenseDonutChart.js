@@ -11,7 +11,12 @@ const CATEGORY_COLORS = [
   "#D08A62",
 ];
 
-export default function ExpenseDonutChart({ categories }) {
+export default function ExpenseDonutChart({
+  categories,
+  type = "spent",
+  amountLabel = type === "income" ? "Ingresado" : "Gastado",
+}) {
+  const chartTitle = type === "income" ? "Distribución de ingresos" : "Distribución de gastos";
   const expenses = categories
     .map(([name, amount], index) => ({
       name,
@@ -23,9 +28,11 @@ export default function ExpenseDonutChart({ categories }) {
 
   if (total === 0) {
     return (
-      <section className="expense-chart-section" aria-label="Distribución de gastos">
-        <h2>Distribución de gastos</h2>
-        <p className="expense-chart-empty">No hay gastos en este intervalo.</p>
+      <section className="expense-chart-section" aria-label={chartTitle}>
+        <h2>{chartTitle}</h2>
+        <p className="expense-chart-empty">
+          No hay {type === "income" ? "ingresos" : "gastos"} en este intervalo.
+        </p>
       </section>
     );
   }
@@ -41,17 +48,17 @@ export default function ExpenseDonutChart({ categories }) {
   };
 
   return (
-    <section className="expense-chart-section" aria-label="Distribución de gastos">
-      <h2>Distribución de gastos</h2>
+    <section className="expense-chart-section" aria-label={chartTitle}>
+      <h2>{chartTitle}</h2>
       <div className="expense-chart-layout">
         <div
           className="expense-donut"
           style={chartStyle}
           role="img"
-          aria-label={`Gráfico circular del gasto total de ${total.toFixed(2)} euros`}
+          aria-label={`Gráfico circular de ${amountLabel.toLowerCase()} total: ${total.toFixed(2)} euros`}
         >
           <div className="expense-donut-center">
-            <span>Total gastado</span>
+            <span>Total {amountLabel.toLowerCase()}</span>
             <strong>{total.toFixed(2)}€</strong>
           </div>
         </div>

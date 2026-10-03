@@ -1,20 +1,27 @@
 import { useState } from "react";
 import BudgetBar from "../../components/BudgetBar";
-import { SPENT_CATEGORIES } from "../../utils/constants";
+import { INCOME_CATEGORIES, SPENT_CATEGORIES } from "../../utils/constants";
 import { getCategoriesList, normalizeCategories } from "../../utils/Functions";
 import { FiPlus, FiX } from "react-icons/fi";
 
-export function getCategoriesSummary(movements, categoriesList, startDate, endDate) {
+export function getCategoriesSummary(
+	movements,
+	categoriesList,
+	startDate,
+	endDate,
+	type = "spent",
+) {
 	const totals = {};
 	const persistedCategories = normalizeCategories(categoriesList)
-		.filter((category) => category.type === "spent");
+		.filter((category) => category.type === type);
 	const categoryLimits = new Map(
 		persistedCategories.map(({ category, limit }) => [category, limit]),
 	);
 	const persistedCategoryNames = persistedCategories.map(
 		(category) => category.category,
 	);
-	const allCategories = [...new Set([...SPENT_CATEGORIES, ...persistedCategoryNames])];
+	const defaultCategories = type === "income" ? INCOME_CATEGORIES : SPENT_CATEGORIES;
+	const allCategories = [...new Set([...defaultCategories, ...persistedCategoryNames])];
 
 	const filteredMovements = movements.filter((movement) => {
 		if (!movement || !movement.fecha) return false;
@@ -34,7 +41,7 @@ export function getCategoriesSummary(movements, categoriesList, startDate, endDa
 
 	filteredMovements.forEach((movement) => {
 		const amount = Number(movement.importe);
-		if (!Number.isFinite(amount) || amount >= 0) return;
+		if (!Number.isFinite(amount) || (type === "spent" ? amount >= 0 : amount <= 0)) return;
 
 		const category = movement.categoria || "Sin categoría";
 		totals[category] = (totals[category] || 0) + Math.abs(amount);
@@ -50,25 +57,29 @@ export function getCategoriesSummary(movements, categoriesList, startDate, endDa
 		.sort(([, totalA], [, totalB]) => totalB - totalA);
 }
 
-export function CategoryList({ categories, navigate }) {
+export function CategoryList({ categories, navigate, categoryType, amountLabel }) {
   return (
     <div className="category-list-container">
-      <Title />
-      <CategoryItem categories={categories} navigate={navigate} />
+			<CategoryItem
+				categories={categories}
+				navigate={navigate}
+				categoryType={categoryType}
+				amountLabel={amountLabel}
+			/>
     </div>
   );
 }
 
-export function AddCategoryBudget({ categoriesList, onSave }) {
+export function AddCategoryBudget({ categoriesList, onSave, categoryType = "spent" }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedCategory, setSelectedCategory] = useState("");
 	const [limit, setLimit] = useState("");
 	const budgetedCategories = new Set(
 		normalizeCategories(categoriesList)
-			.filter((category) => category.type === "spent" && Number(category.limit) > 0)
+			.filter((category) => category.type === categoryType && Number(category.limit) > 0)
 			.map((category) => category.category),
 	);
-	const availableCategories = getCategoriesList("spent", categoriesList).filter(
+	const availableCategories = getCategoriesList(categoryType, categoriesList).filter(
 		(category) => !budgetedCategories.has(category),
 	);
 
@@ -76,7 +87,7 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 		event.preventDefault();
 		if (!selectedCategory || Number(limit) <= 0) return;
 
-		onSave(selectedCategory, limit);
+		onSave(selectedCategory, limit, categoryType);
 		setIsModalOpen(false);
 		setSelectedCategory("");
 		setLimit("");
@@ -91,7 +102,8 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 					onClick={() => setIsModalOpen(true)}
 					disabled={availableCategories.length === 0}
 				>
-					<FiPlus aria-hidden="true" /> Añadir límite
+					<FiPlus aria-hidden="true" />
+					{categoryType === "income" ? "Añadir objetivo" : "Añadir límite"}
 				</button>
 			</div>
 			{isModalOpen && (
@@ -104,7 +116,9 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 						onSubmit={saveBudget}
 					>
 						<div className="new-budget-heading">
-							<h2 id="new-budget-title">Añadir límite de categoría</h2>
+							<h2 id="new-budget-title">
+								{categoryType === "income" ? "Añadir objetivo de ingresos" : "Añadir límite de categoría"}
+							</h2>
 							<button
 								type="button"
 								className="new-budget-close"
@@ -131,7 +145,9 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 										</option>
 									))}
 								</select>
-								<label htmlFor="new-budget-limit">Límite mensual (€)</label>
+								<label htmlFor="new-budget-limit">
+									{categoryType === "income" ? "Objetivo mensual (€)" : "Límite mensual (€)"}
+								</label>
 								<input
 									id="new-budget-limit"
 									type="number"
@@ -151,12 +167,16 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 										Cancelar
 									</button>
 									<button type="submit" className="movement-save-button">
-										Guardar límite
+										{categoryType === "income" ? "Guardar objetivo" : "Guardar límite"}
 									</button>
 								</div>
 							</>
 						) : (
-							<p>Ya hay límites para todas las categorías de gasto.</p>
+							<p>
+								{categoryType === "income"
+									? "Ya hay objetivos para todas las categorías de ingreso."
+									: "Ya hay límites para todas las categorías de gasto."}
+							</p>
 						)}
 					</form>
 				</div>
@@ -165,11 +185,13 @@ export function AddCategoryBudget({ categoriesList, onSave }) {
 	);
 }
 
-export function CategoryItem({ categories, navigate }) {
+export function CategoryItem({ categories, navigate, categoryType, amountLabel }) {
   if (!categories || categories.length === 0) {
     return (
       <span className="empty-state-text">
-        Registra gastos para ver el resumen por categorías
+				{categoryType === "income"
+					? "Registra ingresos para ver el resumen por categorías"
+					: "Registra gastos para ver el resumen por categorías"}
       </span>
     );
   }
@@ -179,15 +201,13 @@ export function CategoryItem({ categories, navigate }) {
       key={category}
       onClick={() => navigate(`/categories/${category}`)}
     >
-    <BudgetBar limit={limit} spent={total} title={category} />
+		<BudgetBar
+			limit={limit}
+			spent={total}
+			title={category}
+			categoryType={categoryType}
+			amountLabel={amountLabel}
+		/>
     </div>
   ));
-}
-
-export function Title() {
-  return (
-    <div className="categories-header">
-      <h3>Gastos por categoría</h3>
-    </div>
-  );
 }
