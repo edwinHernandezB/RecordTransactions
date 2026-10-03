@@ -4,7 +4,9 @@ import TopBar from "../../components/Topbar";
 import { useMovements } from "../../context/MovementsContext";
 import FloatingButton from "../../components/FloatingButton";
 import { useCategories } from "../../context/CategoriesContext";
+import { useSavings } from "../../context/SavingsContext";
 import { useDateInterval } from "../../context/DateIntervalContext";
+import { SavingsSummary } from "../../components/SavingsSummary";
 import {
   Categories,
   calculateFilteredMovements,
@@ -23,6 +25,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { movements, setMovements } = useMovements();
   const { categoriesList, setCategoriesList } = useCategories();
+  const { savingsAccounts, addSavingsAccount, updateSavingsAccount } = useSavings();
   const { startDate, endDate, setDateInterval } = useDateInterval();
   const [pendingInterval, setPendingInterval] = useState({
     startDate,
@@ -60,6 +63,12 @@ export default function Home() {
         <MonthlySummary
           monthSpent={monthSpent}
           monthAvailable={monthAvailable}
+        />
+
+        <SavingsSummary
+          accounts={savingsAccounts}
+          onAddAccount={addSavingsAccount}
+          onUpdateAccount={updateSavingsAccount}
         />
 
         <Categories categories={categories} navigate={navigate} />
