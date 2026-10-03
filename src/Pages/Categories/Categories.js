@@ -5,6 +5,8 @@ import { useCategories } from "../../context/CategoriesContext";
 import { useDateInterval } from "../../context/DateIntervalContext";
 import TopBar from "../../components/Topbar";
 import ExpenseDonutChart from "../../components/ExpenseDonutChart";
+import { SavingsGoals } from "../../components/SavingsSummary";
+import { useSavings } from "../../context/SavingsContext";
 import {
   AddCategoryBudget,
   getCategoriesSummary,
@@ -15,6 +17,7 @@ export default function Categories() {
   const [activeType, setActiveType] = useState("spent");
   const navigate = useNavigate();
   const { movements } = useMovements();
+  const { savingsAccounts, updateSavingsAccount } = useSavings();
   const { categoriesList, updateCategoryLimit } = useCategories();
   const { startDate, endDate } = useDateInterval();
 
@@ -70,6 +73,12 @@ export default function Categories() {
           categoryType={activeType}
           amountLabel={amountLabel}
         />
+        {activeType === "income" && (
+          <SavingsGoals
+            accounts={savingsAccounts}
+            onUpdateAccount={updateSavingsAccount}
+          />
+        )}
       </div>
       <AddCategoryBudget
         categoriesList={categoriesList}

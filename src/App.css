@@ -888,6 +888,144 @@ body {
   gap: 12px;
 }
 
+.savings-summary {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #b6b5b5;
+  border-radius: 12px;
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.savings-summary-heading,
+.savings-account-list li,
+.savings-goal-heading,
+.savings-goal-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.savings-summary-heading h2,
+.savings-goals h2 {
+  margin: 0 0 5px;
+  font-size: 16px;
+}
+
+.savings-total {
+  color: #34764a;
+  font-size: 24px;
+}
+
+.savings-add-button,
+.savings-goal-action {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  background: #fff;
+  color: #222;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.savings-account-list,
+.savings-goal-list {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.savings-account-list li {
+  padding-top: 8px;
+  border-top: 1px solid #e3e3e3;
+  font-size: 14px;
+}
+
+.savings-icon-button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.savings-empty {
+  margin: 12px 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.savings-goals {
+  margin: 12px 8px 20px;
+  padding: 16px;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  text-align: left;
+}
+
+.savings-goal-item {
+  display: grid;
+  gap: 7px;
+  padding: 12px 0;
+  border-top: 1px solid #e3e3e3;
+}
+
+.savings-goal-heading span {
+  color: #34764a;
+  font-weight: 700;
+}
+
+.savings-goal-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #e6e6e6;
+}
+
+.savings-goal-track > div {
+  height: 100%;
+  border-radius: inherit;
+  background: #77a98b;
+  transition: width 0.3s ease;
+}
+
+.savings-goal-caption {
+  color: #666;
+  font-size: 12px;
+}
+
+@media (max-width: 420px) {
+  .savings-summary {
+    padding: 12px;
+  }
+
+  .savings-summary-heading {
+    align-items: flex-start;
+  }
+
+  .savings-add-button {
+    max-width: 122px;
+    font-size: 12px;
+  }
+}
+
 /* Activo ingreso */
 .active-income {
   background: #d4f8d4; /* verde suave */
