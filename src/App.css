@@ -446,6 +446,132 @@ body {
   align-items: center;
 }
 
+.expense-chart-section {
+  width: min(100%, 760px);
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 18px 16px 12px;
+}
+
+.expense-chart-section h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+
+.expense-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 20px;
+}
+
+.expense-donut {
+  display: grid;
+  width: min(100%, 190px);
+  aspect-ratio: 1;
+  place-items: center;
+  justify-self: center;
+  border-radius: 50%;
+  background: var(--expense-chart-gradient);
+}
+
+.expense-donut-center {
+  display: flex;
+  width: 62%;
+  aspect-ratio: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  text-align: center;
+}
+
+.expense-donut-center span {
+  color: #666;
+  font-size: 11px;
+}
+
+.expense-donut-center strong {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.expense-chart-legend {
+  display: grid;
+  max-height: 230px;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.expense-chart-legend li,
+.expense-legend-name,
+.expense-legend-value {
+  display: flex;
+  align-items: center;
+}
+
+.expense-chart-legend li {
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.expense-legend-name {
+  min-width: 0;
+  gap: 7px;
+}
+
+.expense-legend-name > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expense-legend-swatch {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  background: var(--expense-category-color);
+}
+
+.expense-legend-value {
+  flex: 0 0 auto;
+  gap: 7px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.expense-legend-value strong {
+  color: #222;
+}
+
+.expense-chart-empty {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+@media (max-width: 380px) {
+  .expense-chart-layout {
+    grid-template-columns: minmax(110px, 0.75fr) minmax(0, 1.25fr);
+    gap: 12px;
+  }
+
+  .expense-chart-legend li {
+    font-size: 11px;
+  }
+
+  .expense-legend-value {
+    gap: 4px;
+  }
+}
+
 .btn-showAll {
   cursor: pointer;
   border: none;

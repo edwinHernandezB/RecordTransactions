@@ -3,6 +3,7 @@ import { useMovements } from "../../context/MovementsContext";
 import { useCategories } from "../../context/CategoriesContext";
 import { useDateInterval } from "../../context/DateIntervalContext";
 import TopBar from "../../components/Topbar";
+import ExpenseDonutChart from "../../components/ExpenseDonutChart";
 import {
   AddCategoryBudget,
   getCategoriesSummary,
@@ -25,6 +26,7 @@ export default function Categories() {
   return (
     <>
       <TopBar title="Categorías" onBack={() => navigate("/")} />
+      <ExpenseDonutChart categories={categories} />
       <CategoryList categories={categories} navigate={navigate} />
       <AddCategoryBudget
         categoriesList={categoriesList}
