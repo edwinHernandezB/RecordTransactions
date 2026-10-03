@@ -35,7 +35,14 @@ export default function Movements() {
 
       <div className="movements">
         <Title totalMonthSpent={totalMonthSpent} />
-        <MovementsList movements={filteredMovements} />
+        <MovementsList
+          movements={filteredMovements}
+          onSelect={(movement) =>
+            navigate(`/movements/${encodeURIComponent(movement.id)}/detail`, {
+              state: { movement },
+            })
+          }
+        />
         <FloatingButton onClick={() => navigate("/movements/create")} />
       </div>
     </>

@@ -1,5 +1,6 @@
 import { CATEGORY_ICONS } from "../../utils/constants";
 import { ArrowsClockwise  } from "phosphor-react";
+import { FiChevronRight } from "react-icons/fi";
 
 export function calculateTotalMonthSpent(filteredMovements) {
   if (!filteredMovements || filteredMovements.length == 0) {
@@ -44,9 +45,15 @@ export function Title({ totalMonthSpent }) {
   );
 }
 
-export function MovementsList({ movements }) {
+export function MovementsList({ movements, onSelect }) {
   return movements.map((m) => (
-    <div key={m.id} className="movement-row">
+    <button
+      type="button"
+      key={m.id}
+      className="movement-row movement-row-button"
+      onClick={() => onSelect(m)}
+      aria-label={`Ver detalle de ${m.nombre || m.categoria}`}
+    >
       <CategoryIcon category={m.categoria} />
 
       <div className="movement-details">
@@ -63,7 +70,8 @@ export function MovementsList({ movements }) {
         {m.importe > 0 ? "+" : ""}
         {m.importe.toFixed(2)}€
       </div>
-    </div>
+      <FiChevronRight className="movement-chevron" aria-hidden="true" />
+    </button>
   ));
 }
 

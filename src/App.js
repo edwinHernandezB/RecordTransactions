@@ -4,6 +4,7 @@ import Home from './Pages/Home/Home';
 import Movements from './Pages/Movements/Movements';
 import CreateMovement from './Pages/CreateMovement/CreateMovement';
 import Categories from './Pages/Categories/Categories';
+import MovementDetail from './Pages/MovementDetail/MovementDetail';
 import { AppProviders } from './context/AppProvider';
 import JsonViewer from "./Pages/JsonViewer";
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/movements" element={<Movements />} />
           <Route path="/movements/create" element={<CreateMovement />} />
+          <Route path="/movements/:movementId/detail" element={<MovementDetail />} />
           <Route path="/categories/:category" element={<Movements />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/json-viewer" element={<JsonViewer />} />
