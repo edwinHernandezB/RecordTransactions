@@ -5,6 +5,7 @@ import TopBar from "../../components/Topbar";
 import { CategoryIcon } from "../Movements/UtilsMovements";
 import { useMovements } from "../../context/MovementsContext";
 import { useCategories } from "../../context/CategoriesContext";
+import { useSavings } from "../../context/SavingsContext";
 import { getCategoriesList } from "../../utils/Functions";
 import {
   applyMovementEdit,
@@ -19,6 +20,7 @@ export default function MovementDetail() {
   const { movementId } = useParams();
   const { movements, setMovements } = useMovements();
   const { categoriesList } = useCategories();
+  const { savingsAccounts } = useSavings();
   const movement = movements.find(
     (item) => String(item.id) === movementId,
   ) || location.state?.movement;
@@ -27,6 +29,9 @@ export default function MovementDetail() {
   const movementCategoryOptions = availableCategories.includes(movement?.categoria)
     ? availableCategories
     : [...availableCategories, movement?.categoria].filter(Boolean);
+  const savingsAccount = savingsAccounts.find(
+    (account) => account.id === String(movement?.savingsAccountId),
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [form, setForm] = useState(() =>
@@ -176,6 +181,15 @@ export default function MovementDetail() {
                     <span><FiTag aria-hidden="true" /> Categoría</span>
                     <span>{movement.categoria || "Sin categoría"}</span>
                   </div>
+                  {Number(movement.savingsTransferAmount) > 0 && (
+                    <div className="movement-detail-row">
+                      <span>Transferido al ahorro</span>
+                      <span>
+                        {Number(movement.savingsTransferAmount).toFixed(2)}€
+                        {savingsAccount ? ` · ${savingsAccount.name}` : ""}
+                      </span>
+                    </div>
+                  )}
                 </section>
 
                 <div className="movement-detail-actions">

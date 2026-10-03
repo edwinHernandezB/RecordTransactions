@@ -3,22 +3,42 @@ import { getCategoriesList } from "../../utils/Functions";
 export const today = new Date().toISOString().split("T")[0];
 
 export function isMovementFormValid(form) {
+  const movementAmount = Number(form.movImport);
+  const savingsTransferAmount = Number(form.savingsTransferAmount || 0);
+
   return (
     form.name.trim() !== "" &&
     form.category.trim() !== "" &&
     form.date !== "" &&
     form.movImport.trim() !== "" &&
-    Number.isFinite(Number(form.movImport))
+    Number.isFinite(movementAmount) &&
+    movementAmount > 0 &&
+    Number.isFinite(savingsTransferAmount) &&
+    savingsTransferAmount >= 0 &&
+    (form.type !== "income" ||
+      !form.savingsAccountId ||
+      (savingsTransferAmount > 0 && savingsTransferAmount <= movementAmount))
   );
 }
 
 export function getMissingMovementFields(form) {
+  const movementAmount = Number(form.movImport);
+  const savingsTransferAmount = Number(form.savingsTransferAmount || 0);
+
   return [
     !form.name.trim() && "nombre",
     !form.category.trim() && "categoría",
     !form.date && "fecha",
-    (!form.movImport.trim() || !Number.isFinite(Number(form.movImport))) &&
+    (!form.movImport.trim() ||
+      !Number.isFinite(movementAmount) ||
+      movementAmount <= 0) &&
       "importe",
+    form.type === "income" &&
+      form.savingsAccountId &&
+      (!Number.isFinite(savingsTransferAmount) ||
+        savingsTransferAmount <= 0 ||
+        savingsTransferAmount > movementAmount) &&
+      "importe destinado al ahorro",
   ].filter(Boolean);
 }
 
@@ -34,6 +54,14 @@ export function createMovement(form, movements) {
     fecha: form.date,
     importe: finalImport,
     tipo: form.type,
+    savingsAccountId:
+      form.type === "income" && form.savingsAccountId
+        ? String(form.savingsAccountId)
+        : "",
+    savingsTransferAmount:
+      form.type === "income" && form.savingsAccountId
+        ? Math.min(Number(form.savingsTransferAmount) || 0, Math.abs(finalImport))
+        : 0,
   };
 }
 
@@ -64,6 +92,7 @@ export function MovementForm({
   form,
   setForm,
   availableCategories,
+  savingsAccounts = [],
   openNewCategoryModal,
 }) {
   return (
@@ -73,7 +102,13 @@ export function MovementForm({
           className={`type-button ${
             form.type === "income" ? "active-income" : ""
           }`}
-          onClick={() => setForm({ ...form, type: "income", category: "" })}
+          onClick={() =>
+            setForm({
+              ...form,
+              type: "income",
+              category: "",
+            })
+          }
         >
           Ingreso
         </button>
@@ -82,7 +117,15 @@ export function MovementForm({
           className={`type-button ${
             form.type === "spent" ? "active-expense" : ""
           }`}
-          onClick={() => setForm({ ...form, type: "spent", category: "" })}
+          onClick={() =>
+            setForm({
+              ...form,
+              type: "spent",
+              category: "",
+              savingsAccountId: "",
+              savingsTransferAmount: "",
+            })
+          }
         >
           Gasto
         </button>
@@ -131,6 +174,8 @@ export function MovementForm({
       <input
         className="movement-input"
         type="number"
+        min="0.01"
+        step="0.01"
         placeholder="Importe"
         required
         value={form.movImport}
@@ -138,6 +183,61 @@ export function MovementForm({
           setForm({ ...form, movImport: event.target.value })
         }
       />
+      {form.type === "income" && savingsAccounts.length > 0 && (
+        <div className="movement-savings-transfer">
+          <label htmlFor="movement-savings-account">
+            Destinar parte del ingreso al ahorro
+          </label>
+          <select
+            id="movement-savings-account"
+            className="movement-input"
+            value={form.savingsAccountId}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                savingsAccountId: event.target.value,
+                savingsTransferAmount: event.target.value
+                  ? form.savingsTransferAmount
+                  : "",
+              })
+            }
+          >
+            <option value="">No transferir a una cuenta</option>
+            {savingsAccounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} ({account.balance.toFixed(2)}€)
+              </option>
+            ))}
+          </select>
+          {form.savingsAccountId && (
+            <>
+              <label htmlFor="movement-savings-amount">
+                Importe que se transfiere (€)
+              </label>
+              <input
+                id="movement-savings-amount"
+                className="movement-input"
+                type="number"
+                min="0.01"
+                max={Number(form.movImport) > 0 ? Number(form.movImport) : undefined}
+                step="0.01"
+                inputMode="decimal"
+                placeholder="Importe para ahorrar"
+                value={form.savingsTransferAmount}
+                onChange={(event) =>
+                  setForm({ ...form, savingsTransferAmount: event.target.value })
+                }
+                required
+              />
+              {Number(form.savingsTransferAmount) > Number(form.movImport) && (
+                <p className="movement-validation-message" role="alert">
+                  El importe destinado al ahorro no puede superar el ingreso.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

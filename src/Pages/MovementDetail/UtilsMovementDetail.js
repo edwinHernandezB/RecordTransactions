@@ -37,12 +37,19 @@ export function isMovementEditFormValid(form) {
 
 export function applyMovementEdit(movement, form) {
   const amount = Math.abs(Number(form.amount));
+  const wasIncome = Number(movement.importe) > 0;
+  const updatedAmount = wasIncome ? amount : -amount;
+  const savingsTransferAmount = wasIncome
+    ? Math.min(Number(movement.savingsTransferAmount) || 0, amount)
+    : 0;
 
   return {
     ...movement,
     nombre: form.name.trim(),
     categoria: form.category.trim(),
     fecha: form.date,
-    importe: Number(movement.importe) < 0 ? -amount : amount,
+    importe: updatedAmount,
+    savingsAccountId: wasIncome ? movement.savingsAccountId || "" : "",
+    savingsTransferAmount,
   };
 }

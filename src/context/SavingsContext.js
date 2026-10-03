@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useMovements } from "./MovementsContext";
 
 const SavingsContext = createContext();
 const SAVINGS_STORAGE_KEY = "savingsAccounts";
@@ -13,7 +14,10 @@ function loadSavingsAccounts() {
       .map((account) => ({
         id: String(account.id),
         name: String(account.name),
-        balance: Math.max(Number(account.balance) || 0, 0),
+        openingBalance: Math.max(
+          Number(account.openingBalance ?? account.balance) || 0,
+          0,
+        ),
         goal: Math.max(Number(account.goal) || 0, 0),
       }));
   } catch {
@@ -22,36 +26,77 @@ function loadSavingsAccounts() {
 }
 
 export function SavingsProvider({ children }) {
-  const [savingsAccounts, setSavingsAccounts] = useState(loadSavingsAccounts);
+  const { movements } = useMovements();
+  const [storedAccounts, setStoredAccounts] = useState(loadSavingsAccounts);
 
   useEffect(() => {
-    localStorage.setItem(SAVINGS_STORAGE_KEY, JSON.stringify(savingsAccounts));
-  }, [savingsAccounts]);
+    localStorage.setItem(SAVINGS_STORAGE_KEY, JSON.stringify(storedAccounts));
+  }, [storedAccounts]);
+
+  const savingsAccounts = storedAccounts.map((account) => {
+    const transferredIn = movements.reduce((total, movement) => {
+      if (
+        String(movement.savingsAccountId) !== account.id ||
+        Number(movement.importe) <= 0
+      ) {
+        return total;
+      }
+
+      const transfer = Number(movement.savingsTransferAmount);
+      if (!Number.isFinite(transfer) || transfer <= 0) return total;
+      return total + Math.min(transfer, Number(movement.importe));
+    }, 0);
+
+    return { ...account, balance: account.openingBalance + transferredIn };
+  });
 
   const addSavingsAccount = (name, balance) => {
     const account = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: name.trim(),
-      balance: Number(balance),
+      openingBalance: Number(balance),
       goal: 0,
     };
 
-    if (!account.name || !Number.isFinite(account.balance) || account.balance < 0) {
+    if (
+      !account.name ||
+      !Number.isFinite(account.openingBalance) ||
+      account.openingBalance < 0
+    ) {
       return;
     }
 
-    setSavingsAccounts((current) => [...current, account]);
+    setStoredAccounts((current) => [...current, account]);
   };
 
   const updateSavingsAccount = (accountId, changes) => {
-    setSavingsAccounts((current) =>
+    const accountTransfers = movements.reduce((total, movement) => {
+      if (
+        String(movement.savingsAccountId) !== String(accountId) ||
+        Number(movement.importe) <= 0
+      ) {
+        return total;
+      }
+
+      const transfer = Number(movement.savingsTransferAmount);
+      return Number.isFinite(transfer) && transfer > 0
+        ? total + Math.min(transfer, Number(movement.importe))
+        : total;
+    }, 0);
+
+    setStoredAccounts((current) =>
       current.map((account) =>
         account.id === String(accountId)
           ? {
               ...account,
               ...(changes.name != null ? { name: changes.name.trim() } : {}),
               ...(changes.balance != null
-                ? { balance: Math.max(Number(changes.balance) || 0, 0) }
+                ? {
+                    openingBalance: Math.max(
+                      (Number(changes.balance) || 0) - accountTransfers,
+                      0,
+                    ),
+                  }
                 : {}),
               ...(changes.goal != null
                 ? { goal: Math.max(Number(changes.goal) || 0, 0) }

@@ -35,7 +35,8 @@ export function calculateMonthlySummary(filteredMovements) {
       categorySummary[category] =
         (categorySummary[category] || 0) + amountSpent;
     } else {
-      available += movementAmount;
+      const savingsTransfer = Number(movement.savingsTransferAmount) || 0;
+      available += movementAmount - Math.min(Math.max(savingsTransfer, 0), movementAmount);
     }
   });
 
@@ -238,6 +239,8 @@ function ButtonExportData({ movements, categoriesList }) {
               fecha: movement.fecha,
               importe: movement.importe,
               tipo: movement.importe < 0 ? "Gasto" : "Ingreso",
+              savingsAccountId: movement.savingsAccountId || "",
+              savingsTransferAmount: Number(movement.savingsTransferAmount) || 0,
             }),
           );
           const exportCategories = Array.isArray(categoriesList)

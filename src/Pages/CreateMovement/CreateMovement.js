@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMovements } from "../../context/MovementsContext";
 import { useCategories } from "../../context/CategoriesContext";
+import { useSavings } from "../../context/SavingsContext";
 import TopBar from "../../components/Topbar";
 import {
   addCategory,
@@ -19,6 +20,7 @@ export default function CreateMovement() {
   const navigate = useNavigate();
   const { movements, setMovements } = useMovements();
   const { categoriesList, setCategoriesList } = useCategories();
+  const { savingsAccounts } = useSavings();
 
   const [form, setForm] = useState({
     name: "",
@@ -26,6 +28,8 @@ export default function CreateMovement() {
     date: today,
     movImport: "",
     type: "spent",
+    savingsAccountId: "",
+    savingsTransferAmount: "",
   });
   const [newCategory, setNewCategory] = useState("");
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -67,6 +71,7 @@ export default function CreateMovement() {
         form={form}
         setForm={setForm}
         availableCategories={availableCategories}
+        savingsAccounts={savingsAccounts}
         openNewCategoryModal={openNewCategoryModal}
       />
 
