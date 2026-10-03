@@ -962,6 +962,54 @@ body {
   font-size: 20px;
 }
 
+.categories-budget-action {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px 0;
+}
+
+.categories-add-budget-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid #222;
+  border-radius: 6px;
+  background: #111;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.categories-add-budget-button:disabled {
+  border-color: #aaa;
+  background: #ddd;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.new-budget-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.new-budget-close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #333;
+  font-size: 20px;
+  cursor: pointer;
+}
+
 .budget-modal label {
   font-weight: 600;
 }

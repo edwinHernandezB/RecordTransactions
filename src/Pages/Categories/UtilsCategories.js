@@ -1,6 +1,8 @@
+import { useState } from "react";
 import BudgetBar from "../../components/BudgetBar";
 import { SPENT_CATEGORIES } from "../../utils/constants";
-import { normalizeCategories } from "../../utils/Functions";
+import { getCategoriesList, normalizeCategories } from "../../utils/Functions";
+import { FiPlus, FiX } from "react-icons/fi";
 
 export function getCategoriesSummary(movements, categoriesList, startDate, endDate) {
 	const totals = {};
@@ -44,7 +46,7 @@ export function getCategoriesSummary(movements, categoriesList, startDate, endDa
 			Number(totals[category] || 0),
 			categoryLimits.get(category),
 		])
-		.filter(([, total]) => total > 0)
+		.filter(([, total, limit]) => total > 0 || Number(limit) > 0)
 		.sort(([, totalA], [, totalB]) => totalB - totalA);
 }
 
@@ -55,6 +57,112 @@ export function CategoryList({ categories, navigate }) {
       <CategoryItem categories={categories} navigate={navigate} />
     </div>
   );
+}
+
+export function AddCategoryBudget({ categoriesList, onSave }) {
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [selectedCategory, setSelectedCategory] = useState("");
+	const [limit, setLimit] = useState("");
+	const budgetedCategories = new Set(
+		normalizeCategories(categoriesList)
+			.filter((category) => category.type === "spent" && Number(category.limit) > 0)
+			.map((category) => category.category),
+	);
+	const availableCategories = getCategoriesList("spent", categoriesList).filter(
+		(category) => !budgetedCategories.has(category),
+	);
+
+	const saveBudget = (event) => {
+		event.preventDefault();
+		if (!selectedCategory || Number(limit) <= 0) return;
+
+		onSave(selectedCategory, limit);
+		setIsModalOpen(false);
+		setSelectedCategory("");
+		setLimit("");
+	};
+
+	return (
+		<>
+			<div className="categories-budget-action">
+				<button
+					type="button"
+					className="categories-add-budget-button"
+					onClick={() => setIsModalOpen(true)}
+					disabled={availableCategories.length === 0}
+				>
+					<FiPlus aria-hidden="true" /> Añadir límite
+				</button>
+			</div>
+			{isModalOpen && (
+				<div className="budget-modal-backdrop" role="presentation">
+					<form
+						className="budget-modal"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="new-budget-title"
+						onSubmit={saveBudget}
+					>
+						<div className="new-budget-heading">
+							<h2 id="new-budget-title">Añadir límite de categoría</h2>
+							<button
+								type="button"
+								className="new-budget-close"
+								aria-label="Cerrar"
+								onClick={() => setIsModalOpen(false)}
+							>
+								<FiX aria-hidden="true" />
+							</button>
+						</div>
+						{availableCategories.length > 0 ? (
+							<>
+								<label htmlFor="new-budget-category">Categoría</label>
+								<select
+									id="new-budget-category"
+									className="movement-input"
+									value={selectedCategory}
+									onChange={(event) => setSelectedCategory(event.target.value)}
+									required
+								>
+									<option value="">Selecciona categoría</option>
+									{availableCategories.map((category) => (
+										<option key={category} value={category}>
+											{category}
+										</option>
+									))}
+								</select>
+								<label htmlFor="new-budget-limit">Límite mensual (€)</label>
+								<input
+									id="new-budget-limit"
+									type="number"
+									min="0.01"
+									step="0.01"
+									inputMode="decimal"
+									value={limit}
+									onChange={(event) => setLimit(event.target.value)}
+									required
+								/>
+								<div className="budget-modal-actions">
+									<button
+										type="button"
+										className="movement-cancel-button"
+										onClick={() => setIsModalOpen(false)}
+									>
+										Cancelar
+									</button>
+									<button type="submit" className="movement-save-button">
+										Guardar límite
+									</button>
+								</div>
+							</>
+						) : (
+							<p>Ya hay límites para todas las categorías de gasto.</p>
+						)}
+					</form>
+				</div>
+			)}
+		</>
+	);
 }
 
 export function CategoryItem({ categories, navigate }) {
