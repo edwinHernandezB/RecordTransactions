@@ -219,65 +219,6 @@ export default function FinanceScreen({
         </View>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Añadir un nuevo movimiento"
-        onPress={() => onNavigate("addMovement")}
-        style={styles.addMovementButton}
-      >
-        <View style={styles.addMovementIcon}>
-          <Text style={styles.addMovementIconText}>＋</Text>
-        </View>
-        <View style={styles.addMovementCopy}>
-          <Text style={styles.addMovementButtonText}>Nuevo movimiento</Text>
-          <Text style={styles.addMovementDetail}>
-            Registra un gasto o un ingreso
-          </Text>
-        </View>
-        <Text style={styles.addMovementArrow}>›</Text>
-      </Pressable>
-
-      <View style={styles.card}>
-        <DateRangeFields
-          startDate={dateInterval.startDate}
-          endDate={dateInterval.endDate}
-          onChange={onChangeDateInterval}
-        />
-      </View>
-      <BudgetAlerts categories={spentCategories} />
-
-      <View style={styles.card}>
-        <View style={styles.sectionHeading}>
-          <Text style={styles.sectionTitle}>Principales gastos</Text>
-          <Pressable onPress={() => onNavigate("categories")}>
-            <Text style={styles.link}>Ver categorías</Text>
-          </Pressable>
-        </View>
-        {spentCategories.length === 0 ? (
-          <Text style={styles.emptyText}>No hay gastos en este periodo.</Text>
-        ) : (
-          spentCategories
-            .filter(([, total]) => total > 0)
-            .slice(0, 3)
-            .map(([item, total]) => (
-              <View key={item} style={styles.accountRowHeader}>
-                <View style={styles.categorySummaryName}>
-                  <CategoryIcon category={item} type="spent" />
-                  <Text style={styles.accountName}>{item}</Text>
-                </View>
-                <Text style={styles.movementAmount}>
-                  −{total.toFixed(2)}€
-                </Text>
-              </View>
-            ))
-        )}
-        {categoryAlerts.length > 0 ? (
-          <Text style={styles.emptyText}>
-            {categoryAlerts.length} categoría(s) necesitan atención.
-          </Text>
-        ) : null}
-      </View>
-
       <View style={styles.card}>
         <View style={styles.sectionHeading}>
           <View>
@@ -481,6 +422,65 @@ export default function FinanceScreen({
         )}
         {accountError ? <Text style={styles.errorText}>{accountError}</Text> : null}
       </View>
+
+      <View style={styles.card}>
+        <DateRangeFields
+          startDate={dateInterval.startDate}
+          endDate={dateInterval.endDate}
+          onChange={onChangeDateInterval}
+        />
+      </View>
+      <BudgetAlerts categories={spentCategories} />
+
+      <View style={styles.card}>
+        <View style={styles.sectionHeading}>
+          <Text style={styles.sectionTitle}>Principales gastos</Text>
+          <Pressable onPress={() => onNavigate("categories")}>
+            <Text style={styles.link}>Ver categorías</Text>
+          </Pressable>
+        </View>
+        {spentCategories.length === 0 ? (
+          <Text style={styles.emptyText}>No hay gastos en este periodo.</Text>
+        ) : (
+          spentCategories
+            .filter(([, total]) => total > 0)
+            .slice(0, 3)
+            .map(([item, total]) => (
+              <View key={item} style={styles.accountRowHeader}>
+                <View style={styles.categorySummaryName}>
+                  <CategoryIcon category={item} type="spent" />
+                  <Text style={styles.accountName}>{item}</Text>
+                </View>
+                <Text style={styles.movementAmount}>
+                  −{total.toFixed(2)}€
+                </Text>
+              </View>
+            ))
+        )}
+        {categoryAlerts.length > 0 ? (
+          <Text style={styles.emptyText}>
+            {categoryAlerts.length} categoría(s) necesitan atención.
+          </Text>
+        ) : null}
+      </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Añadir un nuevo movimiento"
+        onPress={() => onNavigate("addMovement")}
+        style={styles.addMovementButton}
+      >
+        <View style={styles.addMovementIcon}>
+          <Text style={styles.addMovementIconText}>＋</Text>
+        </View>
+        <View style={styles.addMovementCopy}>
+          <Text style={styles.addMovementButtonText}>Nuevo movimiento</Text>
+          <Text style={styles.addMovementDetail}>
+            Registra un gasto o un ingreso
+          </Text>
+        </View>
+        <Text style={styles.addMovementArrow}>›</Text>
+      </Pressable>
 
       <View style={styles.card}>
         <SectionTitle detail={`${filteredMovements.length} en el periodo`}>
