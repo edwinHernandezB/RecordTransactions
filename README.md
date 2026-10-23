@@ -1,70 +1,127 @@
-# Getting Started with Create React App
+# Record Transactions con Expo
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Aplicación principal
 
-## Available Scripts
+Este proyecto Expo es la aplicación principal de Record Transactions. La versión web
+anterior se retiró; la interfaz nativa y la lógica de negocio viven aquí. Las pantallas
+y componentes están en `src/`, y las reglas compartidas de movimientos y saldos en
+`src/finance.js`.
 
-In the project directory, you can run:
+La versión Expo incluye:
 
-### `npm start`
+- Registro de gastos e ingresos, categorías personalizadas y abonos a cuentas.
+- Iconos por categoría en selectores, resúmenes e historial; las categorías nuevas
+  reciben automáticamente un icono relacionado con su nombre o uno genérico.
+- Cuentas de ahorro con edición de nombre/saldo, objetivos y retiros validados.
+- Resumen del periodo, principales gastos, avisos de presupuesto y avance de límites.
+- Historial con búsqueda y filtros por fechas y tipo; edición y eliminación de movimientos.
+- Reglas recurrentes semanales, mensuales o anuales, con generación automática al
+  abrir la app o volver a ella.
+- Exportación e importación JSON de movimientos, categorías, cuentas y recurrencias.
+- Persistencia local con AsyncStorage y navegación nativa por pestañas.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Para trasladar datos anteriores, importa en Copias de seguridad un archivo JSON que
+hayas exportado previamente. La importación solicita confirmación antes de reemplazar
+movimientos y cuentas; las categorías se combinan con las que ya existen.
+La exportación web descarga el archivo directamente. En Android, la primera
+exportación solicita elegir una carpeta y las siguientes guardan allí directamente.
+La interfaz aplica safe area en los bordes superior e inferior para evitar que el
+contenido se solape con las barras del sistema en Android con diseño edge-to-edge.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## React web y React Native: diferencias
 
-### `npm test`
+React es la biblioteca para componentes, estado y composición. React Native utiliza
+React, pero dibuja controles nativos en lugar de HTML:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| React web anterior | React Native |
+| --- | --- |
+| `div`, `button`, `input`, `select` | `View`, `Pressable`, `TextInput`, controles nativos |
+| CSS y hojas `.css` | `StyleSheet.create` y propiedades de estilo en JavaScript |
+| DOM y eventos web | Árbol nativo y eventos táctiles |
+| `localStorage` | AsyncStorage para preferencias y datos pequeños; SQLite para datos relacionales o de mayor volumen |
+| React Router / URL | Navegación móvil, habitualmente Expo Router o React Navigation |
+| Capacitor empaqueta una web dentro de una vista web | React Native renderiza componentes nativos; Expo gestiona módulos nativos y herramientas |
 
-### `npm run build`
+La lógica de negocio y los modelos de datos pueden reutilizarse si no dependen del
+DOM, CSS, almacenamiento web o APIs exclusivas del navegador. La interfaz de la
+versión web sí debe reescribirse con componentes nativos.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Qué hace Expo
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Expo es un conjunto de herramientas y servicios construido sobre React Native.
+El paquete `expo` proporciona el entorno de desarrollo, configuración, Metro y
+compatibilidad entre módulos nativos. `npx expo install paquete` selecciona una
+versión compatible con el SDK del proyecto.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Expo Go:** permite probar durante el desarrollo con el QR de `npx expo start`;
+  no requiere compilar una app propia para comenzar.
+- **Development build:** una app de desarrollo propia para probar módulos nativos
+  que no estén incluidos en Expo Go.
+- **EAS Build:** servicio opcional en la nube para producir APK/AAB o IPA.
+- **Prebuild:** genera los proyectos nativos Android/iOS a partir de la
+  configuración Expo. No hace falta mantenerlos manualmente al usar el flujo
+  administrado; Android e iOS se pueden regenerar.
 
-### `npm run eject`
+## Instalación y comandos
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Requisitos: Node.js LTS, npm, un teléfono con Expo Go o un emulador Android. Para
+compilar Android localmente también se necesita Android Studio/Android SDK y un JDK
+compatible con la versión de React Native.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Desde la carpeta del proyecto Expo, instala las dependencias y arranca el servidor:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```powershell
+cd record-transactions-expo
+npm install
+npx expo start
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Escanea el QR con Expo Go. Para arrancar en un emulador Android ya iniciado:
 
-## Learn More
+```powershell
+npm run android
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Comprobaciones de configuración y empaquetado JavaScript para Android:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```powershell
+npx expo-doctor
+npx expo export --platform android
+```
 
-### Code Splitting
+Compilación nativa local de depuración (genera `android/` ignorado por Git):
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```powershell
+npx expo prebuild --platform android
+cd android
+.\gradlew.bat assembleDebug
+```
 
-### Analyzing the Bundle Size
+El APK se genera en `android\app\build\outputs\apk\debug\app-debug.apk`.
+También se puede iniciar la compilación y despliegue al emulador con
+`npx expo run:android`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Para distribuir sin mantener la compilación local, instalar EAS CLI, iniciar
+sesión y configurar el proyecto:
 
-### Making a Progressive Web App
+```powershell
+npm install --global eas-cli
+eas login
+eas build:configure
+eas build --platform android
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+EAS Build requiere cuenta Expo y conexión a Internet.
 
-### Advanced Configuration
+## Alcance de la migración
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+La versión web no se modifica y puede seguir utilizándose mientras se valida la app
+nativa. Expo no puede leer automáticamente el `localStorage` del contenedor
+Capacitor, por lo que el traslado de datos se realiza mediante el archivo JSON de
+copia de seguridad. Antes de sustituir la versión web, importa una copia real en un
+dispositivo de prueba y comprueba movimientos, saldos, categorías, límites y reglas
+recurrentes.
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+La pantalla de categorías muestra el gasto o ingreso por categoría y sus límites con
+barras de progreso nativas. La navegación usa pestañas nativas; la interfaz no usa
+HTML, CSS web ni React Router.
