@@ -36,7 +36,6 @@ const STORAGE_KEYS = {
   accounts: "savingsAccounts",
   categories: "categories",
   recurring: "recurringMovements",
-  dateInterval: "dateInterval",
 };
 
 const MAIN_TABS = [
@@ -119,18 +118,6 @@ function normalizeMovements(value) {
     }));
 }
 
-function validateDateInterval(value) {
-  return (
-    value &&
-    typeof value === "object" &&
-    typeof value.startDate === "string" &&
-    typeof value.endDate === "string" &&
-    (!value.startDate || /^\d{4}-\d{2}-\d{2}$/.test(value.startDate)) &&
-    (!value.endDate || /^\d{4}-\d{2}-\d{2}$/.test(value.endDate)) &&
-    !(value.startDate && value.endDate && value.startDate > value.endDate)
-  );
-}
-
 export default function App() {
   return (
     <SafeAreaProvider>
@@ -182,12 +169,6 @@ function AppContent() {
           [],
           STORAGE_KEYS.recurring,
         );
-        const loadedInterval = parseStoredValue(
-          values[STORAGE_KEYS.dateInterval],
-          getCurrentMonthInterval(),
-          STORAGE_KEYS.dateInterval,
-        );
-
         if (!Array.isArray(loadedMovements) || !Array.isArray(loadedAccounts)) {
           throw new Error("El formato de los datos guardados no es válido.");
         }
@@ -197,11 +178,7 @@ function AppContent() {
           setAccounts(normalizeAccounts(loadedAccounts));
           setCategories(normalizeCategories(loadedCategories));
           setRecurringMovements(normalizeRecurringMovements(loadedRecurring));
-          setDateInterval(
-            validateDateInterval(loadedInterval)
-              ? loadedInterval
-              : getCurrentMonthInterval(),
-          );
+          setDateInterval(getCurrentMonthInterval());
           setCanPersist(true);
         }
       } catch (error) {
@@ -267,7 +244,6 @@ function AppContent() {
       [STORAGE_KEYS.accounts, JSON.stringify(accounts)],
       [STORAGE_KEYS.categories, JSON.stringify(categories)],
       [STORAGE_KEYS.recurring, JSON.stringify(recurringMovements)],
-      [STORAGE_KEYS.dateInterval, JSON.stringify(dateInterval)],
     ])
       .then(() => setStorageError(""))
       .catch((error) => {
@@ -281,7 +257,6 @@ function AppContent() {
     accounts,
     canPersist,
     categories,
-    dateInterval,
     isLoaded,
     movements,
     recurringMovements,

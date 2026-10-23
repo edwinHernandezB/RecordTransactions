@@ -14,7 +14,7 @@ La versión Expo incluye:
   reciben automáticamente un icono relacionado con su nombre o uno genérico.
 - Cuentas de ahorro con edición de nombre/saldo, objetivos y retiros validados.
 - Resumen del periodo, principales gastos, avisos de presupuesto y avance de límites.
-- Historial con búsqueda y filtros por fechas y tipo; edición y eliminación de movimientos.
+- Historial con búsqueda y filtros por fechas y tipo; edición y eliminación de movimientos. Los filtros abren en el mes actual, permiten navegar por meses y elegir rangos personalizados con el calendario.
 - Reglas recurrentes semanales, mensuales o anuales, con generación automática al
   abrir la app o volver a ella.
 - Exportación e importación JSON de movimientos, categorías, cuentas y recurrencias.
